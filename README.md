@@ -1,32 +1,96 @@
-# Payload Blank Template
+# Head Hot CMS - Payload CMS Project
 
-This template comes configured with the bare minimum to get started on anything you need.
+This is a modern headless CMS built with Payload CMS, TypeScript, and MongoDB. It provides a powerful admin interface and flexible content management capabilities.
 
-## Quick start
+## Technology Stack
 
-This template can be deployed directly from our Cloud hosting and it will setup MongoDB and cloud S3 object storage for media.
+- **Payload CMS**: Modern headless CMS framework
+- **TypeScript**: Type-safe development
+- **MongoDB**: Document database for content storage
+- **Next.js**: React framework for the admin interface
+- **React**: UI library
 
-## Quick Start - local setup
+## Quick Start
 
-To spin up this template locally, follow these steps:
+### Prerequisites
 
-### Clone
+- Node.js 20.18.1 or higher
+- MongoDB (local or cloud instance)
+- npm or pnpm
 
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
+### Local Development
 
-### Development
+1. Copy environment variables:
 
-1. First [clone the repo](#clone) if you have not done so already
-2. `cd my-project && cp .env.example .env` to copy the example environment variables. You'll need to add the `MONGODB_URI` from your Cloud project to your `.env` if you want to use S3 storage and the MongoDB database that was created for you.
+   ```bash
+   cp .env.example .env
+   ```
 
-3. `pnpm install && pnpm dev` to install dependencies and start the dev server
-4. open `http://localhost:3000` to open the app in your browser
+2. Configure your MongoDB connection in `.env`:
 
-That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+   ```env
+   MONGODB_URI=mongodb://127.0.0.1/head-hot-cms
+   ```
 
-#### Docker (Optional)
+3. Install dependencies and start development server:
 
-If you prefer to use Docker for local development instead of a local MongoDB instance, the provided docker-compose.yml file can be used.
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+4. Open your browser and navigate to:
+
+   ```
+   http://localhost:3000
+   ```
+
+5. Follow the on-screen instructions to create your first admin user and start building your content management system.
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run test` - Run tests
+- `npm run payload` - Access Payload CLI commands
+
+## Project Structure
+
+```
+src/
+├── app/           # Next.js app directory
+├── collections/   # Payload collections (content models)
+├── payload.config.ts  # Payload configuration
+└── payload-types.ts   # Generated TypeScript types
+```
+
+## Features
+
+- **Admin Dashboard**: Built-in admin interface for content management
+- **TypeScript Support**: Full type safety throughout the project
+- **MongoDB Integration**: Scalable document database
+- **REST & GraphQL APIs**: Auto-generated APIs for your content
+- **Authentication**: Built-in user management and authentication
+- **Media Management**: File upload and management capabilities
+- **Rich Text Editor**: Lexical-based rich text editing
+
+## Development Guidelines
+
+- Follow TypeScript best practices
+- Use Payload's collection configurations for content modeling
+- Implement proper validation for all content fields
+- Use built-in authentication and authorization
+- Follow security best practices for database connections
+
+## Docker Support (Optional)
+
+For local development with Docker:
+
+```bash
+docker-compose up -d
+```
 
 To do so, follow these steps:
 
