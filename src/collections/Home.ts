@@ -2,6 +2,9 @@ import type { CollectionConfig } from 'payload'
 
 export const Home: CollectionConfig = {
   slug: 'home',
+  versions: {
+    drafts: true, // เปิดใช้งาน versioning และ draft
+  },
   admin: {
     useAsTitle: 'title',
     components: {
@@ -123,25 +126,20 @@ export const Home: CollectionConfig = {
       ],
     },
     {
-      name: 'published',
-      type: 'checkbox',
-      label: 'Published',
-      defaultValue: false,
-      admin: { position: 'sidebar' },
-    },
-    {
-      name: 'publishAt',
+      name: 'scheduledPublishAt',
       type: 'date',
       label: 'Scheduled Publish At',
+      required: false,
       admin: {
         position: 'sidebar',
         date: { pickerAppearance: 'dayAndTime' },
       },
     },
     {
-      name: 'unpublishAt',
+      name: 'scheduledUnpublishAt',
       type: 'date',
       label: 'Scheduled Unpublish At',
+      required: false,
       admin: {
         position: 'sidebar',
         date: { pickerAppearance: 'dayAndTime' },
@@ -155,30 +153,36 @@ export const Home: CollectionConfig = {
     },
   ],
   hooks: {
-    beforeChange: [
-      async ({ data, req, operation, originalDoc, context }) => {
-        // Only enforce on create/update
-        if ((operation === 'create' || operation === 'update') && data.published) {
+    afterChange: [
+      async ({ doc, previousDoc, req, operation }) => {
+        // เฉพาะกรณี publish (draft -> published)
+        if (
+          operation === 'update' &&
+          doc._status === 'published' &&
+          previousDoc?._status !== 'published'
+        ) {
           const payload = req.payload
-          // Unpublish all other docs
+          // หา doc อื่นที่ published อยู่ (ยกเว้นตัวเอง)
           const others = await payload.find({
             collection: 'home',
             where: {
-              published: { equals: true },
-              id: { not_equals: originalDoc?.id || undefined },
+              _status: { equals: 'published' },
+              id: { not_equals: doc.id },
             },
+            limit: 100,
           })
+          // Unpublish ทุก doc อื่น (สร้าง draft ใหม่ทับ published)
           await Promise.all(
-            others.docs.map((doc) =>
+            others.docs.map((other) =>
               payload.update({
                 collection: 'home',
-                id: doc.id,
-                data: { published: false },
+                id: other.id,
+                data: {}, // ไม่ต้องแก้ field ใด แค่ save draft ใหม่
+                draft: true,
               }),
             ),
           )
         }
-        return data
       },
     ],
   },

@@ -1,31 +1,12 @@
-import { notFound } from 'next/navigation'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
-import React from 'react'
+'use client'
+import React, { useEffect, useState } from 'react'
+import axios from 'axios'
 import Image from 'next/image'
-import { Box, Typography, Stack, Paper, Divider, Chip } from '@mui/material'
+import { Box, Typography, Stack, Paper, Divider, Chip, CircularProgress } from '@mui/material'
+import type { Home, Media } from '@/payload-types'
+import { useSearchParams } from 'next/navigation'
 
-type Media = { url: string }
-
-type Product = {
-  id: string
-  name: string
-  price?: number
-  description?: string
-  link?: string
-  image?: number | Media
-}
-
-type Event = {
-  id: string
-  title: string
-  date?: string
-  description?: string
-  link?: string
-  image?: number | Media
-}
-
-function getImageUrl(img?: number | { url?: string | null }): string | undefined {
+function getImageUrl(img?: number | Media | null): string | undefined {
   if (!img) return undefined
   if (typeof img === 'object' && 'url' in img && typeof img.url === 'string' && img.url) {
     return img.url
@@ -33,22 +14,86 @@ function getImageUrl(img?: number | { url?: string | null }): string | undefined
   return undefined
 }
 
-export default async function HomePreviewPage({
-  searchParams,
-}: Readonly<{ searchParams: { id?: string } }>) {
-  const id = searchParams?.id
-  if (!id) return notFound()
+function renderRichTextContent(content: Home['content']) {
+  // Minimal plain text fallback for Payload Lexical richText
+  if (!content || typeof content !== 'object' || !('root' in content)) return null
+  const root = (
+    content as {
+      root?: { children?: Array<{ key?: string; children?: Array<{ text?: string }> }> }
+    }
+  ).root
+  if (!root || !Array.isArray(root.children)) return null
+  return root.children.map((block, i) => {
+    if (block && Array.isArray(block.children)) {
+      return (
+        <div key={block.key ?? i}>
+          {block.children.map((c) => (typeof c.text === 'string' ? c.text : '')).join(' ')}
+        </div>
+      )
+    }
+    return null
+  })
+}
 
-  const payload = await getPayload({ config })
-  const doc = await payload.findByID({ collection: 'home', id })
-  if (!doc) return notFound()
+export default function HomePreviewPage() {
+  const searchParams = useSearchParams()
+  const id = searchParams.get('id')
+  const [doc, setDoc] = useState<Home | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Normalize productList/events: filter only items with id (string)
+  useEffect(() => {
+    if (!id) {
+      setError('Not found')
+      setLoading(false)
+      return
+    }
+    const apiBase = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:3000'
+    if (!/^https?:\/\//.test(apiBase)) {
+      setError('NEXT_PUBLIC_API_URL must be an absolute URL (e.g. https://domain.com)')
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    axios
+      .get(`${apiBase}/api/home/${id}`, { withCredentials: true })
+      .then((res) => {
+        const d: Home | undefined = res.data?.doc ?? res.data
+        if (!d?.id) {
+          setError('Not found')
+          setDoc(null)
+        } else {
+          setDoc(d)
+          setError(null)
+        }
+      })
+      .catch((_err) => {
+        setError('Not found')
+        setDoc(null)
+      })
+      .finally(() => setLoading(false))
+  }, [id])
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+        <CircularProgress />
+      </Box>
+    )
+  }
+  if (error || !doc) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+        <Typography color="error">Not found</Typography>
+      </Box>
+    )
+  }
+
   const products = Array.isArray(doc.productList)
-    ? doc.productList.filter((p) => typeof p?.id === 'string')
+    ? doc.productList.filter((p) => typeof p?.id === 'string' && !!p.id)
     : []
   const events = Array.isArray(doc.events)
-    ? doc.events.filter((e) => typeof e?.id === 'string')
+    ? doc.events.filter((e) => typeof e?.id === 'string' && !!e.id)
     : []
 
   return (
@@ -187,8 +232,9 @@ export default async function HomePreviewPage({
                 mb: 2,
                 overflowX: 'auto',
               }}
-              dangerouslySetInnerHTML={{ __html: Array.isArray(doc.content) ? doc.content.map((block: any) => block.children?.map((c: any) => c.text).join(' ')).join('<br/>') : doc.content }}
-            />
+            >
+              {renderRichTextContent(doc.content)}
+            </Box>
           </Box>
         )}
       </Paper>

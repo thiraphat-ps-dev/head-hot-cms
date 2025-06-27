@@ -192,9 +192,8 @@ export interface Home {
         id?: string | null;
       }[]
     | null;
-  published?: boolean | null;
-  publishAt?: string | null;
-  unpublishAt?: string | null;
+  scheduledPublishAt?: string | null;
+  scheduledUnpublishAt?: string | null;
   content?: {
     root: {
       type: string;
@@ -212,6 +211,7 @@ export interface Home {
   } | null;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -349,12 +349,12 @@ export interface HomeSelect<T extends boolean = true> {
         link?: T;
         id?: T;
       };
-  published?: T;
-  publishAt?: T;
-  unpublishAt?: T;
+  scheduledPublishAt?: T;
+  scheduledUnpublishAt?: T;
   content?: T;
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

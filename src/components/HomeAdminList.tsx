@@ -13,35 +13,9 @@ import {
 } from '@mui/material'
 import Link from 'next/link'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+import type { Home } from '../payload-types'
 
-// Define the HomeDoc type based on the Home collection fields
-interface HeroBanner {
-  headline: string
-  subheadline?: string
-  image?: string // Use string for image URL or path
-}
-
-interface Product {
-  // Define fields as needed, fallback to minimal
-  [key: string]: unknown
-}
-
-interface Event {
-  // Define fields as needed, fallback to minimal
-  [key: string]: unknown
-}
-
-interface HomeDoc {
-  id: string
-  title: string
-  heroBanner?: HeroBanner
-  productList?: Product[]
-  events?: Event[]
-  published?: boolean
-  publishAt?: string
-  unpublishAt?: string
-  updatedAt?: string
-}
+type HomeDoc = Home
 
 interface HomeAdminListProps {
   data?: {
@@ -49,7 +23,7 @@ interface HomeAdminListProps {
   }
 }
 
-const formatDate = (dateStr?: string, color?: string) => {
+const formatDate = (dateStr?: string | null, color?: string) => {
   if (!dateStr) return <Typography color="text.secondary">-</Typography>
   return (
     <Typography variant="body2" color={color}>
@@ -59,17 +33,15 @@ const formatDate = (dateStr?: string, color?: string) => {
 }
 
 const HomeAdminList: React.FC<HomeAdminListProps> = ({ data }) => {
-  const docs = data?.docs || []
   const sortedDocs = React.useMemo(() => {
+    const docs = data?.docs || []
+    // Sort by updatedAt (latest first)
     return docs.slice().sort((a, b) => {
-      if (a.published === b.published) {
-        const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : 0
-        const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : 0
-        return bTime - aTime
-      }
-      return a.published ? -1 : 1
+      const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : 0
+      const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : 0
+      return bTime - aTime
     })
-  }, [docs])
+  }, [data?.docs])
 
   return (
     <Box sx={{ p: 2 }}>
@@ -96,10 +68,8 @@ const HomeAdminList: React.FC<HomeAdminListProps> = ({ data }) => {
                 Event Count
               </TableCell>
               <TableCell sx={{ fontWeight: 700 }} align="center">
-                Published
+                <span>Status</span>
               </TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Scheduled Publish</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Scheduled Unpublish</TableCell>
               <TableCell sx={{ fontWeight: 700 }} align="center">
                 Preview
               </TableCell>
@@ -109,33 +79,38 @@ const HomeAdminList: React.FC<HomeAdminListProps> = ({ data }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedDocs.map((row) => (
+            {sortedDocs.map(({ id, title, heroBanner, productList, events, _status }) => (
               <TableRow
-                key={row.id}
+                key={id}
                 sx={{
-                  backgroundColor: row.published ? 'rgba(56, 142, 60, 0.08)' : undefined,
                   transition: 'background 0.2s',
                   '&:hover': { backgroundColor: 'grey.50' },
                 }}
               >
-                <TableCell sx={{ fontWeight: 600 }}>{row.title}</TableCell>
-                <TableCell>{row.heroBanner?.headline}</TableCell>
-                <TableCell align="center">{row.productList?.length ?? 0}</TableCell>
-                <TableCell align="center">{row.events?.length ?? 0}</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>
+                  {title || <Typography color="text.secondary">-</Typography>}
+                </TableCell>
+                <TableCell>
+                  {heroBanner?.headline || <Typography color="text.secondary">-</Typography>}
+                </TableCell>
+                <TableCell align="center">{productList?.length ?? 0}</TableCell>
+                <TableCell align="center">{events?.length ?? 0}</TableCell>
                 <TableCell align="center">
-                  {row.published ? (
+                  {_status === 'published' ? (
                     <Typography color="success.main" fontWeight={700}>
                       ● Published
+                    </Typography>
+                  ) : _status === 'draft' ? (
+                    <Typography color="warning.main" fontWeight={700}>
+                      Draft
                     </Typography>
                   ) : (
                     <Typography color="text.secondary">-</Typography>
                   )}
                 </TableCell>
-                <TableCell>{formatDate(row.publishAt, 'info.main')}</TableCell>
-                <TableCell>{formatDate(row.unpublishAt, 'warning.main')}</TableCell>
                 <TableCell align="center">
                   <Link
-                    href={`/home/preview?id=${row.id}`}
+                    href={`/home/preview?id=${id}`}
                     target="_blank"
                     style={{ textDecoration: 'none' }}
                   >
@@ -145,10 +120,7 @@ const HomeAdminList: React.FC<HomeAdminListProps> = ({ data }) => {
                   </Link>
                 </TableCell>
                 <TableCell align="center">
-                  <Link
-                    href={`/admin/collections/home/${row.id}`}
-                    style={{ textDecoration: 'none' }}
-                  >
+                  <Link href={`/admin/collections/home/${id}`} style={{ textDecoration: 'none' }}>
                     <Button size="small" variant="contained" color="secondary">
                       Edit
                     </Button>
