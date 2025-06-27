@@ -6,7 +6,7 @@ This is a modern headless CMS built with Payload CMS, TypeScript, and MongoDB. I
 
 - **Payload CMS**: Modern headless CMS framework
 - **TypeScript**: Type-safe development
-- **MongoDB**: Document database for content storage
+- **PostgreSQL**: Reliable relational database for content storage
 - **Next.js**: React framework for the admin interface
 - **React**: UI library
 
@@ -15,7 +15,7 @@ This is a modern headless CMS built with Payload CMS, TypeScript, and MongoDB. I
 ### Prerequisites
 
 - Node.js 20.18.1 or higher
-- MongoDB (local or cloud instance)
+- PostgreSQL 16 or higher
 - npm or pnpm
 
 ### Local Development
@@ -26,20 +26,28 @@ This is a modern headless CMS built with Payload CMS, TypeScript, and MongoDB. I
    cp .env.example .env
    ```
 
-2. Configure your MongoDB connection in `.env`:
-
+2. Configure your PostgreSQL connection in `.env`:
    ```env
-   MONGODB_URI=mongodb://127.0.0.1/head-hot-cms
+   DATABASE_URI=postgresql://localhost:5432/head-hot-cms
    ```
 
-3. Install dependencies and start development server:
+3. Ensure PostgreSQL is running and create the database:
+   ```bash
+   # Using Homebrew (macOS)
+   brew services start postgresql@16
+   createdb head-hot-cms
+   
+   # Or using Docker
+   docker-compose up postgres -d
+   ```
 
+4. Install dependencies and start development server:
    ```bash
    npm install
    npm run dev
    ```
 
-4. Open your browser and navigate to:
+5. Open your browser and navigate to:
 
    ```
    http://localhost:3000
@@ -70,7 +78,7 @@ src/
 
 - **Admin Dashboard**: Built-in admin interface for content management
 - **TypeScript Support**: Full type safety throughout the project
-- **MongoDB Integration**: Scalable document database
+- **PostgreSQL Integration**: Reliable relational database
 - **REST & GraphQL APIs**: Auto-generated APIs for your content
 - **Authentication**: Built-in user management and authentication
 - **Media Management**: File upload and management capabilities
