@@ -27,21 +27,24 @@ This is a modern headless CMS built with Payload CMS, TypeScript, and MongoDB. I
    ```
 
 2. Configure your PostgreSQL connection in `.env`:
+
    ```env
    DATABASE_URI=postgresql://localhost:5432/head-hot-cms
    ```
 
 3. Ensure PostgreSQL is running and create the database:
+
    ```bash
    # Using Homebrew (macOS)
    brew services start postgresql@16
    createdb head-hot-cms
-   
+
    # Or using Docker
    docker-compose up postgres -d
    ```
 
 4. Install dependencies and start development server:
+
    ```bash
    npm install
    npm run dev
@@ -53,7 +56,7 @@ This is a modern headless CMS built with Payload CMS, TypeScript, and MongoDB. I
    http://localhost:3000
    ```
 
-5. Follow the on-screen instructions to create your first admin user and start building your content management system.
+6. Follow the on-screen instructions to create your first admin user and start building your content management system.
 
 ## Available Scripts
 

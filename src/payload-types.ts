@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    home: Home;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -77,6 +78,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    home: HomeSelect<false> | HomeSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -158,6 +160,43 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home".
+ */
+export interface Home {
+  id: number;
+  title: string;
+  heroBanner: {
+    headline: string;
+    subheadline?: string | null;
+    image?: (number | null) | Media;
+    cta?: string | null;
+    ctaLink?: string | null;
+  };
+  productList?:
+    | {
+        name: string;
+        description?: string | null;
+        image?: (number | null) | Media;
+        price?: number | null;
+        link?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  events?:
+    | {
+        title: string;
+        date?: string | null;
+        description?: string | null;
+        image?: (number | null) | Media;
+        link?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -170,6 +209,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'home';
+        value: number | Home;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -252,6 +295,44 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home_select".
+ */
+export interface HomeSelect<T extends boolean = true> {
+  title?: T;
+  heroBanner?:
+    | T
+    | {
+        headline?: T;
+        subheadline?: T;
+        image?: T;
+        cta?: T;
+        ctaLink?: T;
+      };
+  productList?:
+    | T
+    | {
+        name?: T;
+        description?: T;
+        image?: T;
+        price?: T;
+        link?: T;
+        id?: T;
+      };
+  events?:
+    | T
+    | {
+        title?: T;
+        date?: T;
+        description?: T;
+        image?: T;
+        link?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
