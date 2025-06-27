@@ -122,7 +122,66 @@ export const Home: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'published',
+      type: 'checkbox',
+      label: 'Published',
+      defaultValue: false,
+      admin: { position: 'sidebar' },
+    },
+    {
+      name: 'publishAt',
+      type: 'date',
+      label: 'Scheduled Publish At',
+      admin: {
+        position: 'sidebar',
+        date: { pickerAppearance: 'dayAndTime' },
+      },
+    },
+    {
+      name: 'unpublishAt',
+      type: 'date',
+      label: 'Scheduled Unpublish At',
+      admin: {
+        position: 'sidebar',
+        date: { pickerAppearance: 'dayAndTime' },
+      },
+    },
+    {
+      name: 'content',
+      type: 'richText',
+      label: 'Content',
+      required: false,
+    },
   ],
+  hooks: {
+    beforeChange: [
+      async ({ data, req, operation, originalDoc, context }) => {
+        // Only enforce on create/update
+        if ((operation === 'create' || operation === 'update') && data.published) {
+          const payload = req.payload
+          // Unpublish all other docs
+          const others = await payload.find({
+            collection: 'home',
+            where: {
+              published: { equals: true },
+              id: { not_equals: originalDoc?.id || undefined },
+            },
+          })
+          await Promise.all(
+            others.docs.map((doc) =>
+              payload.update({
+                collection: 'home',
+                id: doc.id,
+                data: { published: false },
+              }),
+            ),
+          )
+        }
+        return data
+      },
+    ],
+  },
 }
 
 export default Home

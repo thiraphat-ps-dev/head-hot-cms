@@ -192,6 +192,24 @@ export interface Home {
         id?: string | null;
       }[]
     | null;
+  published?: boolean | null;
+  publishAt?: string | null;
+  unpublishAt?: string | null;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -331,6 +349,10 @@ export interface HomeSelect<T extends boolean = true> {
         link?: T;
         id?: T;
       };
+  published?: T;
+  publishAt?: T;
+  unpublishAt?: T;
+  content?: T;
   updatedAt?: T;
   createdAt?: T;
 }
