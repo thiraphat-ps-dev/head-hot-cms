@@ -133,6 +133,7 @@ export const Home: CollectionConfig = {
       admin: {
         position: 'sidebar',
         date: { pickerAppearance: 'dayAndTime' },
+        description: 'ตั้งเวลาสำหรับเผยแพร่เนื้อหาอัตโนมัติ',
       },
     },
     {
@@ -143,12 +144,21 @@ export const Home: CollectionConfig = {
       admin: {
         position: 'sidebar',
         date: { pickerAppearance: 'dayAndTime' },
+        description: 'ตั้งเวลาสำหรับซ่อน/ถอดเนื้อหาอัตโนมัติ',
       },
     },
     {
       name: 'content',
       type: 'richText',
       label: 'Content',
+      required: false,
+    },
+    {
+      name: 'categories',
+      type: 'relationship',
+      relationTo: ['categories' as const],
+      hasMany: true,
+      label: 'Categories',
       required: false,
     },
   ],
@@ -182,6 +192,32 @@ export const Home: CollectionConfig = {
               }),
             ),
           )
+        }
+        // Scheduling: ถ้า scheduledPublishAt ถึงเวลา ให้ publish อัตโนมัติ
+        if (
+          doc.scheduledPublishAt &&
+          new Date(doc.scheduledPublishAt) <= new Date() &&
+          doc._status !== 'published'
+        ) {
+          await req.payload.update({
+            collection: 'home',
+            id: doc.id,
+            data: {},
+            draft: false,
+          })
+        }
+        // Scheduling: ถ้า scheduledUnpublishAt ถึงเวลา ให้ unpublish อัตโนมัติ
+        if (
+          doc.scheduledUnpublishAt &&
+          new Date(doc.scheduledUnpublishAt) <= new Date() &&
+          doc._status === 'published'
+        ) {
+          await req.payload.update({
+            collection: 'home',
+            id: doc.id,
+            data: {},
+            draft: true,
+          })
         }
       },
     ],
