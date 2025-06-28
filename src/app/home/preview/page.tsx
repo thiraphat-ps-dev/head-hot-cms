@@ -4,6 +4,7 @@ import axios from 'axios'
 import Image from 'next/image'
 import { Box, Typography, Stack, Paper, Divider, Chip, CircularProgress } from '@mui/material'
 import type { Home, Media } from '@/payload-types'
+import { useSearchParams } from 'next/navigation'
 
 function getImageUrl(img?: number | Media | null): string | undefined {
   if (!img) return undefined
@@ -35,18 +36,21 @@ function renderRichTextContent(content: Home['content']) {
 }
 
 export default function HomePreviewPage() {
+  const searchParams = useSearchParams()
+  const id = searchParams.get('id')
   const [doc, setDoc] = useState<Home | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     setLoading(true)
+    const url = id ? `/api/payload/preview/home/${id}` : '/api/payload/preview/home'
     axios
-      .get('/api/payload/publish/home')
+      .get(url)
       .then((res) => {
         const d: Home | undefined = res.data
         if (!d?.id) {
-          setError('ไม่พบข้อมูลที่ publish')
+          setError('ไม่พบข้อมูล')
           setDoc(null)
         } else {
           setDoc(d)
@@ -54,11 +58,11 @@ export default function HomePreviewPage() {
         }
       })
       .catch((_err) => {
-        setError('ไม่พบข้อมูลที่ publish')
+        setError('ไม่พบข้อมูล')
         setDoc(null)
       })
       .finally(() => setLoading(false))
-  }, [])
+  }, [id])
 
   if (loading) {
     return (

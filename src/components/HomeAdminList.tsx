@@ -49,11 +49,18 @@ const HomeAdminList: React.FC<HomeAdminListProps> = ({ data }) => {
         <Typography variant="h5" fontWeight={700} color="primary.main">
           Home List
         </Typography>
-        <Link href="/admin/collections/home/create" style={{ textDecoration: 'none' }}>
-          <Button variant="contained" color="primary" startIcon={<OpenInNewIcon />}>
-            Create New
-          </Button>
-        </Link>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Link href="/home/preview" target="_blank" style={{ textDecoration: 'none' }}>
+            <Button variant="outlined" color="success" startIcon={<OpenInNewIcon />}>
+              Live Preview
+            </Button>
+          </Link>
+          <Link href="/admin/collections/home/create" style={{ textDecoration: 'none' }}>
+            <Button variant="contained" color="primary" startIcon={<OpenInNewIcon />}>
+              Create New
+            </Button>
+          </Link>
+        </Box>
       </Box>
       <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 3 }}>
         <Table>
