@@ -4,7 +4,6 @@ import axios from 'axios'
 import Image from 'next/image'
 import { Box, Typography, Stack, Paper, Divider, Chip, CircularProgress } from '@mui/material'
 import type { Home, Media } from '@/payload-types'
-import { useSearchParams } from 'next/navigation'
 
 function getImageUrl(img?: number | Media | null): string | undefined {
   if (!img) return undefined
@@ -36,31 +35,18 @@ function renderRichTextContent(content: Home['content']) {
 }
 
 export default function HomePreviewPage() {
-  const searchParams = useSearchParams()
-  const id = searchParams.get('id')
   const [doc, setDoc] = useState<Home | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!id) {
-      setError('Not found')
-      setLoading(false)
-      return
-    }
-    const apiBase = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:3000'
-    if (!/^https?:\/\//.test(apiBase)) {
-      setError('NEXT_PUBLIC_API_URL must be an absolute URL (e.g. https://domain.com)')
-      setLoading(false)
-      return
-    }
     setLoading(true)
     axios
-      .get(`${apiBase}/api/home/${id}`, { withCredentials: true })
+      .get('/api/payload/publish/home')
       .then((res) => {
-        const d: Home | undefined = res.data?.doc ?? res.data
+        const d: Home | undefined = res.data
         if (!d?.id) {
-          setError('Not found')
+          setError('ไม่พบข้อมูลที่ publish')
           setDoc(null)
         } else {
           setDoc(d)
@@ -68,11 +54,11 @@ export default function HomePreviewPage() {
         }
       })
       .catch((_err) => {
-        setError('Not found')
+        setError('ไม่พบข้อมูลที่ publish')
         setDoc(null)
       })
       .finally(() => setLoading(false))
-  }, [id])
+  }, [])
 
   if (loading) {
     return (
@@ -84,7 +70,7 @@ export default function HomePreviewPage() {
   if (error || !doc) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-        <Typography color="error">Not found</Typography>
+        <Typography color="error">{error ?? 'ไม่พบข้อมูล'}</Typography>
       </Box>
     )
   }
@@ -140,25 +126,15 @@ export default function HomePreviewPage() {
                         <Image
                           src={url}
                           alt={p.name ?? 'Product'}
-                          width={60}
-                          height={60}
-                          style={{ borderRadius: 8, objectFit: 'cover' }}
+                          width={80}
+                          height={80}
+                          style={{ objectFit: 'cover', borderRadius: 8 }}
                         />
                       )}
                       <Box>
                         <Typography fontWeight={600}>{p.name}</Typography>
-                        {p.price && <Typography color="text.secondary">฿{p.price}</Typography>}
-                        {p.description && <Typography variant="body2">{p.description}</Typography>}
-                        {p.link && (
-                          <Chip
-                            label="Link"
-                            component="a"
-                            href={p.link}
-                            clickable
-                            size="small"
-                            sx={{ mt: 1 }}
-                          />
-                        )}
+                        <Typography color="text.secondary">{p.description}</Typography>
+                        {p.price && <Typography color="primary">฿{p.price}</Typography>}
                       </Box>
                     </Paper>
                   )
@@ -185,19 +161,15 @@ export default function HomePreviewPage() {
                         <Image
                           src={url}
                           alt={e.title ?? 'Event'}
-                          width={60}
-                          height={60}
-                          style={{ borderRadius: 8, objectFit: 'cover' }}
+                          width={80}
+                          height={80}
+                          style={{ objectFit: 'cover', borderRadius: 8 }}
                         />
                       )}
                       <Box>
                         <Typography fontWeight={600}>{e.title}</Typography>
-                        {e.date && (
-                          <Typography color="text.secondary">
-                            {new Date(e.date).toLocaleDateString()}
-                          </Typography>
-                        )}
-                        {e.description && <Typography variant="body2">{e.description}</Typography>}
+                        <Typography color="text.secondary">{e.description}</Typography>
+                        {e.date && <Typography color="primary">{e.date}</Typography>}
                         {e.link && (
                           <Chip
                             label="Link"
